@@ -1,0 +1,193 @@
+{
+"$schema": "https://json-schema.org/draft/2020-12/schema",
+"$id": "https://pr-guardian.local/schemas/finding.schema.json",
+"title": "PR Guardian Reviewer Findings",
+"description": "Canonical output contract for PR Guardian specialist reviewers.",
+"type": "object",
+"additionalProperties": false,
+"required": [
+"reviewer",
+"findings"
+],
+"properties": {
+"reviewer": {
+"type": "string",
+"enum": [
+"code-review",
+"security-review",
+"test-impact",
+"architecture-review",
+"database-review",
+"api-review",
+"queue-review"
+]
+},
+"findings": {
+"type": "array",
+"items": {
+"$ref": "#/$defs/finding"
+}
+},
+"metadata": {
+"type": "object",
+"additionalProperties": true
+}
+},
+"$defs": {
+"finding": {
+"type": "object",
+"additionalProperties": false,
+"required": [
+"id",
+"category",
+"severity",
+"confidence",
+"title",
+"description",
+"evidence",
+"verification_status",
+"origin"
+],
+"properties": {
+"id": {
+"type": "string",
+"minLength": 1,
+"pattern": "^[A-Z0-9_-]+$"
+},
+"category": {
+"type": "string",
+"minLength": 1
+},
+"severity": {
+"type": "string",
+"enum": [
+"CRITICAL",
+"HIGH",
+"MEDIUM",
+"LOW",
+"INFO"
+]
+},
+"confidence": {
+"type": "string",
+"enum": [
+"CONFIRMED",
+"LIKELY",
+"POTENTIAL",
+"INFORMATIONAL"
+]
+},
+"title": {
+"type": "string",
+"minLength": 1
+},
+"description": {
+"type": "string",
+"minLength": 1
+},
+"file": {
+"type": [
+"string",
+"null"
+]
+},
+"line": {
+"type": [
+"integer",
+"null"
+],
+"minimum": 1
+},
+"evidence": {
+"type": "array",
+"items": {
+"type": "string",
+"minLength": 1
+}
+},
+"impact": {
+"type": [
+"string",
+"null"
+]
+},
+"recommendation": {
+"type": [
+"string",
+"null"
+]
+},
+"verification_status": {
+"type": "string",
+"enum": [
+"VERIFIED",
+"UNVERIFIED",
+"NOT_APPLICABLE",
+"VERIFICATION_FAILED",
+"REFUTED"
+]
+},
+"origin": {
+"type": "string",
+"enum": [
+"INTRODUCED_BY_PR",
+"EXPOSED_BY_PR",
+"PRE_EXISTING",
+"UNCERTAIN"
+]
+},
+"priority": {
+"type": [
+"string",
+"null"
+],
+"enum": [
+"BLOCKING",
+"NON_BLOCKING",
+"ADVISORY",
+null
+]
+},
+"source": {
+"type": [
+"string",
+"null"
+]
+},
+"sink": {
+"type": [
+"string",
+"null"
+]
+},
+"reviewer": {
+"type": [
+"string",
+"null"
+]
+},
+"metadata": {
+"type": "object",
+"additionalProperties": true,
+"properties": {
+"root_cause": {
+"type": "string"
+},
+"source_findings": {
+"type": "array",
+"items": {
+"type": "string"
+}
+},
+"source_reviewers": {
+"type": "array",
+"items": {
+"type": "string"
+}
+}
+}
+}
+}
+}
+}
+}

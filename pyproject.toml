@@ -1,0 +1,128 @@
+[project]
+name = "pr-guardian"
+version = "0.1.0"
+description = "Evidence-based multi-agent Pull Request review powered by IBM Bob."
+readme = "README.md"
+requires-python = ">=3.11"
+
+dependencies = [
+    "Flask>=3.0,<4.0",
+    "requests>=2.32,<3.0",
+    "python-dotenv>=1.0,<2.0",
+    "jsonschema>=4.23,<5.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.3,<9.0",
+    "pytest-json-report>=1.5,<2.0",
+    "pytest-cov>=6.0,<7.0",
+    "ruff>=0.8,<1.0",
+    "bandit>=1.8,<2.0",
+    "pip-audit>=2.7,<3.0",
+]
+
+[tool.pytest.ini_options]
+minversion = "8.0"
+testpaths = [
+    "tests",
+]
+python_files = [
+    "test_*.py",
+]
+python_classes = [
+    "Test*",
+]
+python_functions = [
+    "test_*",
+]
+addopts = [
+    "-ra",
+    "--strict-markers",
+    "--strict-config",
+]
+markers = [
+    "unit: fast isolated tests",
+    "integration: tests involving multiple project components",
+    "benchmark: synthetic PR Guardian benchmark scenarios",
+]
+
+[tool.coverage.run]
+branch = true
+source = [
+    "app",
+    "guardian",
+    "github",
+    "repository",
+    "analyzers",
+    "models",
+]
+omit = [
+    "tests/*",
+    "benchmarks/*",
+    "workspace/*",
+]
+
+[tool.coverage.report]
+show_missing = true
+skip_covered = false
+precision = 2
+exclude_lines = [
+    "pragma: no cover",
+    "if TYPE_CHECKING:",
+    "if __name__ == .__main__.:",
+    "raise NotImplementedError",
+]
+
+[tool.ruff]
+target-version = "py311"
+line-length = 88
+
+exclude = [
+    ".git",
+    ".venv",
+    "venv",
+    "workspace",
+    "reports",
+    "bob_sessions",
+]
+
+[tool.ruff.lint]
+select = [
+    "E",
+    "F",
+    "I",
+    "B",
+    "UP",
+    "SIM",
+]
+
+ignore = [
+    "E501",
+]
+
+[tool.ruff.lint.isort]
+known-first-party = [
+    "app",
+    "guardian",
+    "github",
+    "repository",
+    "analyzers",
+    "models",
+]
+
+[tool.bandit]
+exclude_dirs = [
+    "tests",
+    "benchmarks",
+    "workspace",
+    "reports",
+]
+
+skips = []
+
+[tool.bandit.assert_used]
+skips = [
+    "*_test.py",
+    "test_*.py",
+]

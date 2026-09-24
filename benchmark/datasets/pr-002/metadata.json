@@ -1,0 +1,27 @@
+{
+"id": "pr-002",
+"title": "Unsafe SQL query construction",
+"description": "The Pull Request replaces a parameterized query with string interpolation using request-controlled input.",
+"domains": [
+"APPLICATION_LOGIC",
+"SECURITY",
+"DATABASE",
+"API",
+"TESTING"
+],
+"expected_reviewers": [
+"code-review",
+"security-review",
+"test-impact",
+"database-review",
+"api-review"
+],
+"reviewers_not_required": [
+"queue-review"
+],
+"known_findings": [
+"SEC-SQL-001"
+],
+"verification_expected": true,
+"verification_type": "SECURITY_ANALYZER"
+}

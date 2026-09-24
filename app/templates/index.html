@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+```
+<title>PR Guardian</title>
+
+<style>
+    :root {
+        color-scheme: dark;
+    }
+
+    * {
+        box-sizing: border-box;
+    }
+
+    body {
+        margin: 0;
+        min-height: 100vh;
+        font-family:
+            Inter,
+            ui-sans-serif,
+            system-ui,
+            -apple-system,
+            BlinkMacSystemFont,
+            "Segoe UI",
+            sans-serif;
+        background: #0d1117;
+        color: #e6edf3;
+    }
+
+    .page {
+        width: min(1100px, calc(100% - 40px));
+        margin: 0 auto;
+        padding: 64px 0;
+    }
+
+    .hero {
+        margin-bottom: 48px;
+    }
+
+    .eyebrow {
+        margin-bottom: 12px;
+        color: #7d8590;
+        font-size: 14px;
+        font-weight: 600;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+    }
+
+    h1 {
+        margin: 0;
+        font-size: clamp(42px, 8vw, 72px);
+        line-height: 1;
+        letter-spacing: -0.04em;
+    }
+
+    .subtitle {
+        max-width: 700px;
+        margin-top: 20px;
+        color: #9da7b3;
+        font-size: 19px;
+        line-height: 1.6;
+    }
+
+    .pillars {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        margin-top: 24px;
+    }
+
+    .pill {
+        padding: 7px 12px;
+        border: 1px solid #30363d;
+        border-radius: 999px;
+        background: #161b22;
+        color: #c9d1d9;
+        font-size: 13px;
+    }
+
+    .grid {
+        display: grid;
+        grid-template-columns:
+            minmax(0, 1.5fr)
+            minmax(280px, 1fr);
+        gap: 24px;
+    }
+
+    .card {
+        border: 1px solid #30363d;
+        border-radius: 12px;
+        background: #161b22;
+        padding: 28px;
+    }
+
+    .card h2 {
+        margin-top: 0;
+        margin-bottom: 22px;
+        font-size: 20px;
+    }
+
+    .field {
+        margin-bottom: 20px;
+    }
+
+    label {
+        display: block;
+        margin-bottom: 8px;
+        color: #c9d1d9;
+        font-size: 14px;
+        font-weight: 600;
+    }
+
+    input {
+        width: 100%;
+        padding: 12px 14px;
+        border: 1px solid #30363d;
+        border-radius: 8px;
+        background: #0d1117;
+        color: #e6edf3;
+        font: inherit;
+        outline: none;
+    }
+
+    input:focus {
+        border-color: #58a6ff;
+        box-shadow:
+            0 0 0 3px
+            rgba(88, 166, 255, 0.12);
+    }
+
+    button {
+        width: 100%;
+        padding: 13px 18px;
+        border: 0;
+        border-radius: 8px;
+        background: #238636;
+        color: white;
+        font: inherit;
+        font-weight: 700;
+        cursor: pointer;
+    }
+
+    button:hover {
+        background: #2ea043;
+    }
+
+    .flow {
+        display: grid;
+        gap: 10px;
+    }
+
+    .flow-item {
+        padding: 12px 14px;
+        border: 1px solid #30363d;
+        border-radius: 8px;
+        background: #0d1117;
+        color: #c9d1d9;
+        font-size: 14px;
+    }
+
+    .flow-arrow {
+        color: #7d8590;
+        text-align: center;
+    }
+
+    .flash {
+        margin-bottom: 20px;
+        padding: 14px 16px;
+        border: 1px solid #f85149;
+        border-radius: 8px;
+        background: rgba(248, 81, 73, 0.08);
+        color: #ffaba8;
+    }
+
+    .footer {
+        margin-top: 40px;
+        color: #7d8590;
+        font-size: 13px;
+    }
+
+    @media (max-width: 820px) {
+        .grid {
+            grid-template-columns: 1fr;
+        }
+
+        .page {
+            padding-top: 36px;
+        }
+    }
+</style>
+```
+
+</head>
+
+<body>
+    <main class="page">
+        <section class="hero">
+            <div class="eyebrow">
+                Evidence-Based Multi-Agent Pull Request Review
+            </div>
+
+```
+        <h1>
+            PR Guardian
+        </h1>
+
+        <p class="subtitle">
+            Context-aware Pull Request review with adaptive
+            specialist routing, independent finding verification
+            and high-signal review synthesis.
+        </p>
+
+        <div class="pillars">
+            <span class="pill">Contextual</span>
+            <span class="pill">Adaptive</span>
+            <span class="pill">Multi-Agent</span>
+            <span class="pill">Evidence-Based</span>
+        </div>
+    </section>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% for category, message in messages %}
+            <div class="flash">
+                {{ message }}
+            </div>
+        {% endfor %}
+    {% endwith %}
+
+    <section class="grid">
+        <div class="card">
+            <h2>
+                Analyze Pull Request
+            </h2>
+
+            <form
+                action="{{ url_for('dashboard.analyze') }}"
+                method="post"
+            >
+                <div class="field">
+                    <label for="owner">
+                        GitHub owner
+                    </label>
+
+                    <input
+                        id="owner"
+                        name="owner"
+                        type="text"
+                        placeholder="example-org"
+                        required
+                    >
+                </div>
+
+                <div class="field">
+                    <label for="repository">
+                        Repository
+                    </label>
+
+                    <input
+                        id="repository"
+                        name="repository"
+                        type="text"
+                        placeholder="example-project"
+                        required
+                    >
+                </div>
+
+                <div class="field">
+                    <label for="pull_number">
+                        Pull Request number
+                    </label>
+
+                    <input
+                        id="pull_number"
+                        name="pull_number"
+                        type="number"
+                        min="1"
+                        placeholder="42"
+                        required
+                    >
+                </div>
+
+                <button type="submit">
+                    Analyze Pull Request
+                </button>
+            </form>
+        </div>
+
+        <aside class="card">
+            <h2>
+                Review Pipeline
+            </h2>
+
+            <div class="flow">
+                <div class="flow-item">
+                    GitHub PR ingestion
+                </div>
+
+                <div class="flow-arrow">↓</div>
+
+                <div class="flow-item">
+                    Repository-aware context
+                </div>
+
+                <div class="flow-arrow">↓</div>
+
+                <div class="flow-item">
+                    Adaptive reviewer routing
+                </div>
+
+                <div class="flow-arrow">↓</div>
+
+                <div class="flow-item">
+                    Specialist findings
+                </div>
+
+                <div class="flow-arrow">↓</div>
+
+                <div class="flow-item">
+                    Independent verification
+                </div>
+
+                <div class="flow-arrow">↓</div>
+
+                <div class="flow-item">
+                    High-signal final review
+                </div>
+            </div>
+        </aside>
+    </section>
+
+    <footer class="footer">
+        Don't just comment. Prove it.
+    </footer>
+</main>
+```
+
+</body>
+</html>

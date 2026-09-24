@@ -1,0 +1,107 @@
+{
+"$schema": "https://json-schema.org/draft/2020-12/schema",
+"$id": "https://pr-guardian.local/schemas/verification.schema.json",
+"title": "PR Guardian Verification Results",
+"type": "object",
+"additionalProperties": false,
+"required": [
+"pr_id",
+"results"
+],
+"properties": {
+"pr_id": {
+"type": "string",
+"minLength": 1
+},
+"results": {
+"type": "array",
+"items": {
+"$ref": "#/$defs/verification"
+}
+}
+},
+"$defs": {
+"verification": {
+"type": "object",
+"additionalProperties": false,
+"required": [
+"finding_id",
+"method",
+"status"
+],
+"properties": {
+"finding_id": {
+"type": "string",
+"minLength": 1
+},
+"method": {
+"type": "string",
+"enum": [
+"DIRECT_CODE_EVIDENCE",
+"EXISTING_TEST",
+"GENERATED_REGRESSION_TEST",
+"STATIC_ANALYZER",
+"SECURITY_ANALYZER",
+"TYPE_CHECKER",
+"DEPENDENCY_ANALYZER",
+"API_SPEC_COMPARISON",
+"MIGRATION_EXECUTION",
+"DATABASE_INTEGRATION_TEST",
+"QUEUE_EXECUTION_TEST",
+"MANUAL_REPOSITORY_TRACE"
+]
+},
+"status": {
+"type": "string",
+"enum": [
+"VERIFIED",
+"UNVERIFIED",
+"NOT_APPLICABLE",
+"VERIFICATION_FAILED",
+"REFUTED"
+]
+},
+"evidence": {
+"type": "array",
+"items": {
+"type": "string"
+}
+},
+"command": {
+"type": [
+"string",
+"null"
+]
+},
+"test_file": {
+"type": [
+"string",
+"null"
+]
+},
+"expected_result": {
+"type": [
+"string",
+"null"
+]
+},
+"actual_result": {
+"type": [
+"string",
+"null"
+]
+},
+"notes": {
+"type": [
+"string",
+"null"
+]
+},
+"metadata": {
+"type": "object",
+"additionalProperties": true
+}
+}
+}
+}
+}

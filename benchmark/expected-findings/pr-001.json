@@ -1,0 +1,23 @@
+{
+"pr_id": "pr-001",
+"findings": [
+{
+"id": "SEC-TENANT-001",
+"category": "TENANT_ISOLATION",
+"severity": "HIGH",
+"title": "Report lookup is not scoped by organization",
+"expected_files": [
+"app/repositories.py",
+"app/routes.py"
+],
+"expected_behavior": "A user authenticated under one organization must not retrieve reports owned by another organization.",
+"root_cause": "ReportRepository.get_by_id filters only by report_id and ignores organization_id.",
+"verification_possible": true,
+"verification_type": "GENERATED_REGRESSION_TEST",
+"expected_secure_status_codes": [
+403,
+404
+]
+}
+]
+}

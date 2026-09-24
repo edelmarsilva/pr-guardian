@@ -1,0 +1,98 @@
+# Environment / secrets
+.env
+.env.*
+!.env.example
+
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.so
+
+# Virtual environments
+.venv/
+venv/
+env/
+
+# Packaging
+build/
+dist/
+*.egg-info/
+.eggs/
+
+# Test / coverage
+.pytest_cache/
+.coverage
+.coverage.*
+htmlcov/
+coverage.xml
+.pytest_cache/
+pytest-report.json
+
+# Ruff / type-checking caches
+.ruff_cache/
+.mypy_cache/
+.pyright/
+
+# IDE / editor
+.vscode/
+.idea/
+*.swp
+*.swo
+.DS_Store
+Thumbs.db
+
+# Runtime repository workspaces
+workspace/repositories/*
+!workspace/repositories/.gitkeep
+
+# Generated PR Guardian reports
+reports/raw/*
+reports/findings/*
+reports/verification/*
+reports/reviews/*
+reports/metrics/*
+
+!reports/raw/.gitkeep
+!reports/findings/.gitkeep
+!reports/verification/.gitkeep
+!reports/reviews/.gitkeep
+!reports/metrics/.gitkeep
+
+# Benchmark generated results
+benchmarks/baseline/*
+benchmarks/bob-assisted/*
+
+!benchmarks/baseline/.gitkeep
+!benchmarks/bob-assisted/.gitkeep
+
+# Temporary files
+tmp/
+temp/
+*.tmp
+*.log
+
+# Local databases
+*.db
+*.sqlite
+*.sqlite3
+
+# Security tool outputs
+bandit-report.json
+semgrep-report.json
+pip-audit-report.json
+zap-report.json
+
+# Generated test artifacts outside tracked benchmark fixtures
+reports/verification/**/tests/__pycache__/
+
+# Local GitHub / webhook fixtures that may contain secrets
+.github-local/
+webhook-payloads/
+
+# Python local tooling
+.python-version
+
+# Keep Bob session screenshots tracked
+# bob_sessions/ is intentionally NOT ignored

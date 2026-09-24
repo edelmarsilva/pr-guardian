@@ -1,0 +1,28 @@
+{
+"id": "pr-001",
+"title": "Cross-tenant report lookup regression",
+"description": "The Pull Request removes organization scoping from report retrieval.",
+"domains": [
+"APPLICATION_LOGIC",
+"SECURITY",
+"AUTHORIZATION",
+"DATABASE",
+"API",
+"TESTING"
+],
+"expected_reviewers": [
+"code-review",
+"security-review",
+"test-impact",
+"database-review",
+"api-review"
+],
+"reviewers_not_required": [
+"queue-review"
+],
+"known_findings": [
+"SEC-TENANT-001"
+],
+"verification_expected": true,
+"verification_type": "GENERATED_REGRESSION_TEST"
+}

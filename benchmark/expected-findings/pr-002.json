@@ -1,0 +1,19 @@
+{
+"pr_id": "pr-002",
+"findings": [
+{
+"id": "SEC-SQL-001",
+"category": "SQL_INJECTION",
+"severity": "HIGH",
+"title": "User-controlled email is interpolated into SQL",
+"expected_files": [
+"app/routes.py",
+"app/repositories.py"
+],
+"expected_behavior": "User input must be passed to the database using parameterized query binding.",
+"root_cause": "UserRepository.find_by_email builds SQL using an f-string containing request-controlled email input.",
+"verification_possible": true,
+"verification_type": "SECURITY_ANALYZER"
+}
+]
+}
