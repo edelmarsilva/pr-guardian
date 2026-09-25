@@ -1,11 +1,9 @@
 from __future__ import annotations
 
-import importlib.util
 import sys
 from pathlib import Path
 
 import pytest
-
 
 BENCHMARK_ROOT = (
     Path(__file__).resolve().parents[2]
@@ -39,6 +37,11 @@ def benchmark_app(
     repository_path = str(
         benchmark_repository
     )
+
+    saved_app_modules = {name: module for name, module in sys.modules.items()
+                         if name == "app" or name.startswith("app.")}
+    for name in saved_app_modules:
+        del sys.modules[name]
 
     sys.path.insert(
         0,
@@ -74,6 +77,8 @@ def benchmark_app(
                     module_name
                 ]
 
+        sys.modules.update(saved_app_modules)
+
 
 def test_same_tenant_report_access_is_allowed(
     benchmark_app,
@@ -105,6 +110,7 @@ def test_same_tenant_report_access_is_allowed(
     )
 
 
+@pytest.mark.xfail(strict=True, reason="PR-001 intentionally lacks tenant scoping; expected invariant fails with HTTP 200")
 def test_cross_tenant_access_should_be_denied(
     benchmark_app,
 ):

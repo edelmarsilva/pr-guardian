@@ -7,8 +7,9 @@ from analyzers.base import (
     AnalyzerIssue,
     AnalyzerResult,
     AnalyzerStatus,
-    )
+)
 from analyzers.runner import run_command
+
 
 class PipAuditAnalyzer:
     name = "pip-audit"

@@ -1,5 +1,8 @@
 from __future__ import annotations
 
+from github.review_mapper import (
+    build_github_review_payload,
+)
 from models import (
     ChangedFile,
     Confidence,
@@ -8,10 +11,6 @@ from models import (
     Review,
     Severity,
     VerificationStatus,
-)
-
-from github.review_mapper import (
-    build_github_review_payload,
 )
 
 

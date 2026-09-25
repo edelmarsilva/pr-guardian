@@ -271,6 +271,17 @@ def create_reviewer_findings(
         code,
     )
 
+    # Execute a real invariant instead of accepting reviewer confidence as proof.
+    test_dir = reports / "verification" / pr_id / "tests"
+    test_dir.mkdir(parents=True, exist_ok=True)
+    (test_dir / "test_sec_001.py").write_text(
+        "import runpy\nfrom pathlib import Path\n\n"
+        "def test_report_stays_in_requesting_organization():\n"
+        "    get_report = runpy.run_path(str(Path.cwd() / 'app/repositories.py'))['get_report']\n"
+        "    assert get_report(2)['organization_id'] == 100\n",
+        encoding="utf-8",
+    )
+
 
 def test_full_review_pipeline(
     tmp_path: Path,
@@ -668,3 +679,62 @@ def test_pipeline_preserves_raw_reviewer_artifacts(
     assert (
         code_artifact.exists()
     )
+
+
+def test_existing_bob_verification_is_preserved(tmp_path):
+    repository = create_repository(tmp_path)
+    reports = create_review_plan(tmp_path, repository)
+    create_reviewer_findings(reports)
+    pr_id = "example-project-pr-42"
+    existing = {"pr_id": pr_id, "results": [{
+        "finding_id": "SEC-001", "method": "MANUAL_REPOSITORY_TRACE",
+        "status": "REFUTED", "evidence": ["Independent trace contradicts hypothesis"],
+        "metadata": {"source": "independent Bob verifier"},
+    }]}
+    path = reports / "verification" / pr_id / "verification-results.json"
+    write_json(path, existing)
+    result = finalize_review(pr_id=pr_id, reports_root=reports)
+    persisted = json.loads(path.read_text())
+    assert persisted["results"][0] == {**existing["results"][0],
+        "command": None, "test_file": None, "expected_result": None,
+        "actual_result": None, "notes": None}
+    assert result["refuted_findings"] == 1
+    review = json.loads(Path(result["review_json"]).read_text())
+    assert all(item["id"] != "SEC-001" for item in review["findings"])
+
+
+def test_finalize_rejects_invalid_reviewer_contract(tmp_path):
+    import pytest
+
+    from scripts.finalize_review import FinalizeReviewError
+    repository = create_repository(tmp_path)
+    reports = create_review_plan(tmp_path, repository)
+    create_reviewer_findings(reports)
+    path = reports / "findings/example-project-pr-42/security-review.json"
+    payload = json.loads(path.read_text())
+    payload["findings"][0]["severity"] = "FATAL"
+    write_json(path, payload)
+    with pytest.raises(FinalizeReviewError, match="Invalid artifact"):
+        finalize_review(pr_id="example-project-pr-42", reports_root=reports)
+
+
+def test_flask_displays_finalized_review(tmp_path):
+    from app import create_app
+    repository = create_repository(tmp_path)
+    reports = create_review_plan(tmp_path, repository)
+    create_reviewer_findings(reports)
+    result = finalize_review(pr_id="example-project-pr-42", reports_root=reports)
+    app = create_app({"TESTING": True, "PR_GUARDIAN_REPORTS": str(reports)})
+    client = app.test_client()
+    assert client.get("/").status_code == 200
+    response = client.get("/reviews/example-project-pr-42")
+    assert response.status_code == 200
+    assert b"Report lookup" in response.data
+    assert b"```" not in response.data
+    assert client.get("/reviews/missing").status_code == 404
+    assert client.post("/analyze", data={}).status_code == 302
+    assert result["final_findings"] == 1
+    metrics = json.loads((reports / "metrics/example-project-pr-42-finalize.json").read_text())
+    assert metrics["generated_tests"] == 1
+    assert metrics["tests_failed"] == 1
+    assert metrics["analysis_duration_seconds"] > 0

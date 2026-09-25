@@ -184,6 +184,7 @@ Use one of:
 * UNVERIFIED
 * NOT_APPLICABLE
 * VERIFICATION_FAILED
+* REFUTED
 
 A finding should not be described as verified unless deterministic evidence or direct reproduction exists.
 

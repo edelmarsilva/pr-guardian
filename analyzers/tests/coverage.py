@@ -7,8 +7,9 @@ from pathlib import Path
 from analyzers.base import (
     AnalyzerResult,
     AnalyzerStatus,
-    )
+)
 from analyzers.runner import run_command
+
 
 @dataclass(slots=True)
 class FileCoverage:

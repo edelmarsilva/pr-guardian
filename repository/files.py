@@ -3,6 +3,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from pathlib import Path
 
+
 class RepositoryFileError(RuntimeError):
     """Raised when a repository file cannot be accessed safely."""
 

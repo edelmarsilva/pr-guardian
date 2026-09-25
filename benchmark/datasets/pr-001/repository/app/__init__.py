@@ -4,6 +4,7 @@ from flask import Flask
 
 from .routes import reports_bp
 
+
 def create_app() -> Flask:
     app = Flask(
     __name__

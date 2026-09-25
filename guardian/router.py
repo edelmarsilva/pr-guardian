@@ -1,11 +1,12 @@
 from __future__ import annotations
 
+from collections.abc import Iterable
 from dataclasses import dataclass, field
 from enum import Enum
 from pathlib import Path
-from typing import Iterable
 
 from models import PullRequest
+
 
 class ReviewDomain(str, Enum):
     CODE = "code-review"

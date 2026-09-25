@@ -162,10 +162,10 @@ def _build_summary(
     )
 
     lines.append(
-        (
+        
             "- Verified findings: "
             f"{verified}"
-        )
+        
     )
 
     inline_candidates = sum(
@@ -178,10 +178,10 @@ def _build_summary(
     )
 
     lines.append(
-        (
+        
             "- Inline candidates: "
             f"{inline_candidates}"
-        )
+        
     )
 
     return "\n".join(

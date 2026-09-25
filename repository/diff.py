@@ -7,6 +7,7 @@ from pathlib import Path
 
 from .clone import RepositoryError
 
+
 @dataclass(slots=True)
 class DiffHunk:
     old_start: int

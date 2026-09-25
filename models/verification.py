@@ -55,7 +55,7 @@ class VerificationResult:
         }
 
     @classmethod
-    def from_dict(cls, data: dict[str, Any]) -> "VerificationResult":
+    def from_dict(cls, data: dict[str, Any]) -> VerificationResult:
         return cls(
             finding_id=data["finding_id"],
             method=VerificationMethod(data["method"]),

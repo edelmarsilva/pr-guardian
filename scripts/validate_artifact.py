@@ -9,6 +9,7 @@ from typing import Any
 from jsonschema import Draft202012Validator
 from jsonschema.exceptions import SchemaError
 
+
 class ArtifactValidationError(RuntimeError):
     """Raised when an artifact cannot be validated."""
 
@@ -27,12 +28,12 @@ def load_json(
         ) from exc
     except json.JSONDecodeError as exc:
         raise ArtifactValidationError(
-        (
+        
         f"Invalid JSON in {path}: "
         f"line {exc.lineno}, "
         f"column {exc.colno}: "
         f"{exc.msg}"
-        )
+        
         ) from exc
     except OSError as exc:
         raise ArtifactValidationError(
@@ -92,10 +93,10 @@ def validate_artifact(
 
     except SchemaError as exc:
         raise ArtifactValidationError(
-            (
+            
                 f"Invalid JSON Schema "
                 f"{schema_path}: {exc.message}"
-            )
+            
         ) from exc
 
     errors = sorted(
@@ -239,7 +240,5 @@ def main() -> int:
 
     return 0
 
-    if __name__ == "__main__":
-        raise SystemExit(
-        main()
-        )
+if __name__ == "__main__":
+    raise SystemExit(main())

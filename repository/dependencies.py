@@ -6,6 +6,7 @@ from pathlib import Path
 
 from .files import list_repository_files, read_text_file
 
+
 @dataclass(slots=True)
 class ImportReference:
     source_file: str

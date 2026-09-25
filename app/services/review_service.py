@@ -7,16 +7,16 @@ from flask import current_app
 from github import (
     GitHubClient,
     PullRequestService,
-    )
+)
 from guardian import (
     DefaultFindingVerifier,
     DefaultReviewSynthesizer,
     OrchestratorConfig,
     PRGuardianOrchestrator,
-    ReviewDomain,
-    )
+)
 
 from .reviewers import build_reviewer_registry
+
 
 class ReviewServiceError(RuntimeError):
     """Raised when a PR Guardian analysis cannot be completed."""
@@ -72,7 +72,7 @@ class ReviewService:
         )
 
         verifier = (
-            DefaultFindingVerifier()
+            DefaultFindingVerifier(reports_root=current_app.config["PR_GUARDIAN_REPORTS"])
         )
 
         synthesizer = (

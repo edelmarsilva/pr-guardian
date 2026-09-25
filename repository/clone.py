@@ -5,6 +5,7 @@ import subprocess
 from dataclasses import dataclass
 from pathlib import Path
 
+
 class RepositoryError(RuntimeError):
     """Raised when a repository operation fails."""
 

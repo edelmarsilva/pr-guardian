@@ -1,5 +1,9 @@
 # PR Guardian Benchmarks
 
+## Current implementation
+
+Only PR-001 and PR-002 vulnerable snapshots and their expected findings are implemented. There are no paired base/head commits, stored baseline runs, or Bob-assisted evaluation results. The remaining scenarios and evaluation structure below describe planned work. Example numbers are illustrative and must not be presented as measured results.
+
 ## Purpose
 
 The benchmark suite evaluates whether PR Guardian improves Pull Request review quality compared with a simpler baseline workflow.
@@ -26,7 +30,7 @@ Measure whether PR Guardian can:
 # Benchmark Structure
 
 ```text
-benchmarks/
+benchmark/
 ├── datasets/
 │   ├── pr-001/
 │   ├── pr-002/
@@ -77,7 +81,7 @@ or a small Git repository with deterministic base/head commits.
 Recommended:
 
 ```text
-benchmarks/datasets/pr-001/
+benchmark/datasets/pr-001/
 ├── README.md
 ├── metadata.json
 └── repository/
@@ -128,7 +132,7 @@ Example:
 Store canonical expected findings under:
 
 ```text
-benchmarks/expected-findings/
+benchmark/expected-findings/
 ```
 
 Example:
@@ -299,7 +303,7 @@ This dataset is important for measuring false-positive behavior.
 Store baseline results under:
 
 ```text
-benchmarks/baseline/
+benchmark/baseline/
 ```
 
 A baseline should be simpler than PR Guardian.
@@ -323,13 +327,13 @@ The goal is a fair comparison.
 Store PR Guardian outputs under:
 
 ```text
-benchmarks/bob-assisted/
+benchmark/bob-assisted/
 ```
 
 Example:
 
 ```text
-benchmarks/bob-assisted/pr-001/
+benchmark/bob-assisted/pr-001/
 ├── findings.json
 ├── verification.json
 ├── review.json

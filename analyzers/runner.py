@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import os
 import shutil
 import subprocess
 import time
@@ -9,6 +10,12 @@ from .base import (
     AnalyzerResult,
     AnalyzerStatus,
 )
+
+
+def _as_text(output: str | bytes | None) -> str:
+    if isinstance(output, bytes):
+        return output.decode("utf-8", errors="replace")
+    return output or ""
 
 
 def executable_exists(
@@ -23,6 +30,7 @@ def run_command(
     command: list[str],
     cwd: Path,
     timeout: float = 120.0,
+    env: dict[str, str] | None = None,
 ) -> AnalyzerResult:
     executable = command[0]
 
@@ -38,6 +46,11 @@ def run_command(
 
     started = time.perf_counter()
 
+    run_env = dict(env if env is not None else os.environ)
+    for key in list(run_env.keys()):
+        if key.startswith(('COV_CORE_', 'COVERAGE_')):
+            del run_env[key]
+
     try:
         process = subprocess.run(
             command,
@@ -46,6 +59,7 @@ def run_command(
             text=True,
             timeout=timeout,
             check=False,
+            env=run_env,
         )
     except subprocess.TimeoutExpired as exc:
         duration = (
@@ -58,8 +72,8 @@ def run_command(
             status=AnalyzerStatus.TIMEOUT,
             command=command,
             duration_seconds=duration,
-            stdout=exc.stdout or "",
-            stderr=exc.stderr or "",
+            stdout=_as_text(exc.stdout),
+            stderr=_as_text(exc.stderr),
         )
     except OSError as exc:
         duration = (
@@ -82,7 +96,11 @@ def run_command(
 
     return AnalyzerResult(
         analyzer=analyzer,
-        status=AnalyzerStatus.SUCCESS,
+        status=(
+            AnalyzerStatus.SUCCESS
+            if process.returncode in (0, 1)
+            else AnalyzerStatus.FAILED
+        ),
         command=command,
         exit_code=process.returncode,
         duration_seconds=duration,

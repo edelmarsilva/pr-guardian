@@ -9,9 +9,9 @@ from models import (
     PullRequest,
     ReviewMetrics,
     Severity,
+    VerificationMethod,
     VerificationResult,
     VerificationStatus,
-    VerificationMethod,
 )
 
 

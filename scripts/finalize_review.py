@@ -4,14 +4,14 @@ import argparse
 import json
 import os
 import sys
+import time
 from pathlib import Path
 from typing import Any
 
 from guardian import (
     DefaultFindingVerifier,
     DefaultReviewSynthesizer,
-    MetricsCalculator,
-    )
+)
 from models import (
     Confidence,
     Finding,
@@ -19,8 +19,17 @@ from models import (
     PullRequest,
     ReviewMetrics,
     Severity,
+    VerificationResult,
     VerificationStatus,
-    )
+)
+from scripts.validate_artifact import validate_artifact
+
+SCHEMAS_ROOT = Path(__file__).resolve().parents[1] / "schemas"
+
+def require_valid_artifact(path: Path, schema: str) -> None:
+    result = validate_artifact(schema_path=SCHEMAS_ROOT / schema, artifact_path=path)
+    if not result["valid"]:
+        raise FinalizeReviewError(f"Invalid artifact {path}: {result['errors']}")
 
 class FinalizeReviewError(RuntimeError):
     """Raised when final review generation cannot continue."""
@@ -103,11 +112,11 @@ def parse_finding(
 
     if missing:
         raise FinalizeReviewError(
-            (
+            
                 f"Finding from {reviewer} "
                 f"is missing required fields: "
                 f"{', '.join(missing)}"
-            )
+            
         )
 
     try:
@@ -137,11 +146,11 @@ def parse_finding(
 
     except ValueError as exc:
         raise FinalizeReviewError(
-            (
+            
                 f"Finding {data.get('id')} "
                 f"from {reviewer} contains "
                 f"an invalid enum value."
-            )
+            
         ) from exc
 
     evidence = data.get(
@@ -154,10 +163,10 @@ def parse_finding(
         list,
     ):
         raise FinalizeReviewError(
-            (
+            
                 f"Finding {data['id']} "
                 "evidence must be a list."
-            )
+            
         )
 
     metadata = data.get(
@@ -251,16 +260,17 @@ def load_findings(
 
         if not path.exists():
             raise FinalizeReviewError(
-                (
+                
                     f"Selected reviewer "
                     f"'{reviewer}' did not "
                     f"produce {path}"
-                )
+                
             )
 
-        payload = read_json(
-            path
-        )
+        require_valid_artifact(path, "finding.schema.json")
+        payload = read_json(path)
+        if payload["reviewer"] != reviewer:
+            raise FinalizeReviewError(f"Reviewer mismatch in {path}")
 
         reviewer_name = str(
             payload.get(
@@ -279,10 +289,10 @@ def load_findings(
             list,
         ):
             raise FinalizeReviewError(
-                (
+                
                     f"'findings' must be "
                     f"a list in {path}"
-                )
+                
             )
 
         for raw_finding in (
@@ -293,12 +303,16 @@ def load_findings(
                 dict,
             ):
                 raise FinalizeReviewError(
-                    (
+                    
                         f"Invalid finding "
                         f"entry in {path}"
-                    )
+                    
                 )
 
+            if raw_finding.get("reviewer", reviewer) != reviewer:
+                raise FinalizeReviewError(f"Finding reviewer mismatch in {path}")
+            if any(item.id == raw_finding["id"] for item in findings):
+                raise FinalizeReviewError(f"Duplicate finding ID: {raw_finding['id']}")
             findings.append(
                 parse_finding(
                     raw_finding,
@@ -610,6 +624,7 @@ def finalize_review(
     pr_id: str,
     reports_root: Path,
     ) -> dict[str, Any]:
+    started = time.perf_counter()
     raw_directory = (
     reports_root
     / "raw"
@@ -636,6 +651,14 @@ def finalize_review(
             [],
         )
     )
+
+    from guardian.router import ReviewDomain
+    allowed_reviewers = {domain.value for domain in ReviewDomain}
+    if (len(set(selected_reviewers)) != len(selected_reviewers)
+            or any(reviewer not in allowed_reviewers for reviewer in selected_reviewers)):
+        raise FinalizeReviewError("Invalid or duplicate selected reviewers.")
+    if not all(char.isalnum() or char in "-_" for char in pr_id):
+        raise FinalizeReviewError("Invalid PR identifier.")
 
     findings_directory = (
         reports_root
@@ -668,43 +691,41 @@ def finalize_review(
 
     if not workspace_path.exists():
         raise FinalizeReviewError(
-            (
+            
                 "Workspace no longer exists: "
                 f"{workspace_path}"
-            )
+            
         )
 
-    verifier = (
-        DefaultFindingVerifier()
-    )
-
-    verifications = verifier.verify(
-        pull_request=pull_request,
-        context=context,
-        repository_path=(
-            workspace_path
-        ),
-        findings=findings,
-    )
-
-    verification_directory = (
-        reports_root
-        / "verification"
-        / pr_id
-    )
-
-    write_json(
-        verification_directory
-        / "verification-results.json",
-        {
-            "pr_id": pr_id,
-            "results": [
-                result.to_dict()
-                for result
-                in verifications
-            ],
-        },
-    )
+    verification_started = time.perf_counter()
+    verification_directory = reports_root / "verification" / pr_id
+    verification_path = verification_directory / "verification-results.json"
+    verifications = []
+    if verification_path.exists():
+        require_valid_artifact(verification_path, "verification.schema.json")
+        existing = read_json(verification_path)
+        if existing["pr_id"] != pr_id:
+            raise FinalizeReviewError("Verification PR identifier mismatch.")
+        known_ids = {finding.id for finding in findings}
+        seen_ids = set()
+        for item in existing["results"]:
+            finding_id = item["finding_id"]
+            if finding_id not in known_ids or finding_id in seen_ids:
+                raise FinalizeReviewError(f"Unknown or duplicate verification ID: {finding_id}")
+            seen_ids.add(finding_id)
+            verifications.append(VerificationResult.from_dict(item))
+    completed_ids = {result.finding_id for result in verifications}
+    verifier = DefaultFindingVerifier(reports_root=reports_root)
+    verifications.extend(verifier.verify(
+        pull_request=pull_request, context=context,
+        repository_path=workspace_path.resolve(),
+        findings=[finding for finding in findings if finding.id not in completed_ids],
+    ))
+    write_json(verification_path, {
+        "pr_id": pr_id,
+        "results": [result.to_dict() for result in verifications],
+    })
+    verification_duration = time.perf_counter() - verification_started
 
     metrics = ReviewMetrics(
         files_changed=(
@@ -756,6 +777,16 @@ def finalize_review(
         ),
     )
 
+    metrics.verification_duration_seconds = verification_duration
+    metrics.generated_tests = len({result.test_file for result in verifications if result.test_file})
+    for result in verifications:
+        summary = result.metadata.get("test_summary", {})
+        metrics.tests_passed += summary.get("passed", 0)
+        metrics.tests_failed += summary.get("failed", 0)
+        metrics.tests_executed += sum(summary.get(key, 0) for key in ("passed", "failed", "errors", "skipped", "xfailed", "xpassed"))
+    metrics.extra["reviewers_available"] = 7
+    metrics.extra["reviewers_skipped"] = 7 - len(selected_reviewers)
+
     synthesizer = (
         DefaultReviewSynthesizer()
     )
@@ -770,6 +801,9 @@ def finalize_review(
         ),
         metrics=metrics,
     )
+
+    metrics.analysis_duration_seconds = time.perf_counter() - started
+    review.metrics = metrics.to_dict()
 
     review_directory = (
         reports_root

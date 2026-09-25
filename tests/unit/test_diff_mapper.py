@@ -6,7 +6,6 @@ from github.diff_mapper import (
     parse_patch,
 )
 
-
 SIMPLE_PATCH = """@@ -10,3 +10,4 @@
  line one
 -line two

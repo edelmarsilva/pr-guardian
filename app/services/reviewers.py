@@ -7,8 +7,9 @@ from typing import Protocol
 from guardian import (
     PullRequestContext,
     ReviewDomain,
-    )
+)
 from models import Finding, PullRequest
+
 
 class BobReviewerBackend(Protocol):
     """
@@ -60,7 +61,7 @@ class PlaceholderBobBackend:
     Temporary backend used while the Bob execution adapter is not yet
     connected.
 
-    It intentionally returns no findings rather than fabricating them.
+    It reports unavailable execution explicitly; it never fabricates findings.
     """
 
     def execute(
@@ -71,7 +72,7 @@ class PlaceholderBobBackend:
         context: PullRequestContext,
         repository_path: Path,
     ) -> list[Finding]:
-        return []
+        raise RuntimeError("Bob backend is not connected. Run /pr-guardian-review in IBM Bob IDE.")
 
 def build_reviewer_registry(
     backend: BobReviewerBackend | None = None,

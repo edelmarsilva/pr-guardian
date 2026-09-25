@@ -234,6 +234,8 @@ The project uses:
 * command execution;
 * repository-aware analysis.
 
+The repository supplies Bob command and specialist instructions; Python preparation/finalization does not itself launch Bob agents. Bob IDE execution must be performed separately, and native Bob compatibility has not been verified in this environment.
+
 The main Bob command is:
 
 ```text
@@ -304,12 +306,12 @@ pr-guardian/
 │
 ├── github/
 │   ├── client.py
-│   ├── pull_requests.py
+│   ├── pull_request.py
 │   ├── reviews.py
 │   ├── review_mapper.py
 │   ├── diff_mapper.py
 │   ├── webhooks.py
-│   └── webhook_service.py
+│   └── webhooks_service.py
 │
 ├── repository/
 │   ├── clone.py
@@ -343,11 +345,10 @@ pr-guardian/
 │   ├── reviews/
 │   └── metrics/
 │
-├── benchmarks/
+├── benchmark/
 │   ├── datasets/
 │   ├── expected-findings/
-│   ├── baseline/
-│   └── bob-assisted/
+│   └── README.md
 │
 ├── workspace/
 │   └── repositories/
@@ -843,9 +844,9 @@ For the MVP, webhook processing may run synchronously.
 
 # Benchmarks
 
-PR Guardian includes controlled synthetic Pull Requests with known defects.
+PR Guardian currently includes two synthetic vulnerable application snapshots with known defects: PR-001 (cross-tenant authorization) and PR-002 (SQL injection), under `benchmark/`. These fixtures exercise defect reproduction; they do not yet provide paired base/head commits or measured baseline-versus-Bob review results.
 
-Examples include:
+The scenario catalog below includes the two existing cases; PR-003 through PR-007 are planned, not implemented:
 
 ```text
 PR-001
@@ -870,7 +871,7 @@ PR-007
 Clean Pull Request
 ```
 
-Expected findings are documented before running the evaluated system.
+Expected findings for the two existing fixtures are stored separately in `benchmark/expected-findings/`. No precision, recall, reviewer-quality, or time-saving claims have been measured by this repository.
 
 This prevents changing the expected result after seeing the review output.
 

@@ -75,14 +75,11 @@ class Finding:
         if self.verification_status == VerificationStatus.REFUTED:
             return False
 
-        if (
+        return not (
             self.confidence == Confidence.POTENTIAL
             and self.severity in {Severity.LOW, Severity.INFO}
             and self.verification_status == VerificationStatus.UNVERIFIED
-        ):
-            return False
-
-        return True
+        )
 
     def is_blocking(self) -> bool:
         return self.priority == FindingPriority.BLOCKING
@@ -113,7 +110,7 @@ class Finding:
         }
 
     @classmethod
-    def from_dict(cls, data: dict[str, Any]) -> "Finding":
+    def from_dict(cls, data: dict[str, Any]) -> Finding:
         priority = data.get("priority")
 
         return cls(

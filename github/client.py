@@ -5,6 +5,7 @@ from typing import Any
 
 import requests
 
+
 class GitHubAPIError(RuntimeError):
     """Raised when a GitHub API request fails."""
 
@@ -19,7 +20,7 @@ class GitHubClient:
     Minimal GitHub REST API client used by PR Guardian.
 
     This class is intentionally generic. Pull Request-specific
-    behavior belongs in github.pull_requests.
+    behavior belongs in github.pull_request.
     """
 
     BASE_URL = "https://api.github.com"

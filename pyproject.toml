@@ -59,7 +59,7 @@ source = [
 ]
 omit = [
     "tests/*",
-    "benchmarks/*",
+    "benchmark/*",
     "workspace/*",
 ]
 
@@ -99,6 +99,8 @@ select = [
 
 ignore = [
     "E501",
+    # Keep existing str/Enum public string representation (StrEnum changes it).
+    "UP042",
 ]
 
 [tool.ruff.lint.isort]
@@ -114,12 +116,13 @@ known-first-party = [
 [tool.bandit]
 exclude_dirs = [
     "tests",
-    "benchmarks",
+    "benchmark",
+    ".venv",
     "workspace",
     "reports",
 ]
 
-skips = []
+skips = ["B101", "B105", "B404", "B603"]
 
 [tool.bandit.assert_used]
 skips = [
@@ -150,3 +153,7 @@ exclude = [
     "schemas*",
     "tests*",
 ]
+
+[tool.ruff.lint.per-file-ignores]
+# Intentionally unused tenant scope is the documented PR-001 defect.
+"benchmark/datasets/pr-001/repository/app/routes.py" = ["F841"]

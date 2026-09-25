@@ -2,7 +2,6 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
-from .webhooks_policy import should_analyze_pull_request
 from .webhooks import (
     GitHubWebhookEvent,
     PullRequestWebhook,
@@ -10,6 +9,7 @@ from .webhooks import (
     parse_webhook_event,
     verify_webhook_signature,
 )
+from .webhooks_policy import should_analyze_pull_request
 
 
 @dataclass(slots=True)

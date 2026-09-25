@@ -6,6 +6,7 @@ from pathlib import Path
 
 from .clone import RepositoryError
 
+
 @dataclass(slots=True)
 class CommitInfo:
     sha: str

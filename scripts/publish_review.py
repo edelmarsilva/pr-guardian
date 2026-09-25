@@ -116,10 +116,10 @@ def parse_repository(
     ) -> tuple[str, str]:
     if "/" not in value:
         raise PublishReviewError(
-            (
+            
                 "Repository must use "
                 "owner/repository format."
-            )
+            
         )
 
     owner, repository = (
@@ -154,10 +154,10 @@ def publish_review(
 
     if not token:
         raise PublishReviewError(
-            (
+            
                 "GITHUB_TOKEN is required "
                 "to publish a review."
-            )
+            
         )
 
     owner, repository_name = (
@@ -193,6 +193,14 @@ def publish_review(
             number=pull_number,
         )
     )
+
+    if review.pr_id != pull_request.identifier:
+        raise PublishReviewError("Review belongs to a different Pull Request.")
+    reviewed_head = review.metadata.get("head_sha")
+    if not reviewed_head or reviewed_head != pull_request.head_sha:
+        raise PublishReviewError(
+            "Review head SHA is missing or stale; prepare and finalize the current head."
+        )
 
     payload = (
         build_github_review_payload(

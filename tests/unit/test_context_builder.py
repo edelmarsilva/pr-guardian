@@ -66,6 +66,9 @@ def write_file(
         exist_ok=True,
     )
 
+    if path.suffix == ".py":
+        compile(content, relative_path, "exec")
+
     path.write_text(
         content,
         encoding="utf-8",
@@ -97,7 +100,7 @@ def find_user(user_id):
         repository,
         "app/routes/users.py",
         """
-    from app.services.users import find_user
+from app.services.users import find_user
     """,
     )
 
@@ -201,7 +204,7 @@ def find_user(user_id):
         repository,
         "app/routes/users.py",
         """
-    from app.services.users import find_user
+from app.services.users import find_user
 
 
 def get_user(user_id):
@@ -222,12 +225,8 @@ def get_user(user_id):
         repository,
     )
 
-    assert any(
-        "app/routes/users.py"
-        in affected
-        for affected
-        in context.potentially_affected_files
-    )
+    assert context.potentially_affected_files == ["app/routes/users.py"]
+    assert context.changed_files[0].direct_dependents == ["app/routes/users.py"]
 
 
 def test_context_builder_detects_api_specification(
@@ -481,7 +480,7 @@ def test_context_builder_detects_queue_components(
         repository,
         "workers/report_worker.py",
         """
-    from rq import Queue
+from rq import Queue
 
 
 def process_report(report_id):
@@ -604,7 +603,7 @@ def find_report(report_id):
         repository,
         "app/services/reports.py",
         """
-    from app.repositories.reports import find_report
+from app.repositories.reports import find_report
 
 
 def get_report(report_id):
@@ -616,7 +615,7 @@ def get_report(report_id):
         repository,
         "app/routes/reports.py",
         """
-    from app.services.reports import get_report
+from app.services.reports import get_report
 
 
 def route(report_id):
@@ -651,10 +650,8 @@ def route(report_id):
         in changed
     )
 
-    assert (
-        affected
-        - changed
-    )
+    assert affected == {"app/services/reports.py"}
+    assert affected.isdisjoint(changed)
 
 
 def test_context_builder_serializes_to_dictionary(

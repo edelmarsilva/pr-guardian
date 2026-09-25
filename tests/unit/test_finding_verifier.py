@@ -6,7 +6,6 @@ import pytest
 
 from guardian.finding_verifier import (
     DefaultFindingVerifier,
-    VerificationPolicy,
 )
 from models import (
     Confidence,
@@ -81,7 +80,7 @@ def make_repository(
     return repository
 
 
-def test_confirmed_finding_with_strong_direct_evidence_can_be_verified(
+def test_confirmed_finding_claims_without_independent_evidence_remain_unverified(
     tmp_path: Path,
 ):
     repository = make_repository(
@@ -111,12 +110,12 @@ def test_confirmed_finding_with_strong_direct_evidence_can_be_verified(
 
     assert (
         result.status
-        == VerificationStatus.VERIFIED
+        == VerificationStatus.UNVERIFIED
     )
 
     assert (
         result.method
-        == VerificationMethod.DIRECT_CODE_EVIDENCE
+        == VerificationMethod.MANUAL_REPOSITORY_TRACE
     )
 
 
@@ -482,7 +481,7 @@ def test_verifier_returns_one_result_per_finding(
     }
 
 
-def test_verified_result_contains_evidence(
+def test_unverified_result_preserves_reviewer_evidence(
     tmp_path: Path,
 ):
     repository = make_repository(
@@ -508,7 +507,7 @@ def test_verified_result_contains_evidence(
 
     assert (
         result.status
-        == VerificationStatus.VERIFIED
+        == VerificationStatus.UNVERIFIED
     )
 
     assert result.evidence

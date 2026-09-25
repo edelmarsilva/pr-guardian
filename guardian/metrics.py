@@ -9,10 +9,11 @@ from models import (
     ReviewMetrics,
     VerificationResult,
     VerificationStatus,
-    )
+)
 
 from .orchestrator import ReviewerExecution
 from .router import RoutingResult
+
 
 @dataclass(slots=True)
 class VerificationMetrics:

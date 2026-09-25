@@ -5,7 +5,6 @@ import json
 import os
 import re
 import sys
-from dataclasses import asdict
 from pathlib import Path
 
 from github import GitHubClient, PullRequestService
@@ -108,6 +107,7 @@ def build_review_plan(
     context,
     routing,
     workspace_path: Path,
+    reports_root: Path = Path("reports"),
     ) -> dict:
     selected_reviewers = [
     reviewer.value
@@ -147,7 +147,7 @@ def build_review_plan(
                     decision.matched_signals
                 ),
                 "output": (
-                    f"reports/findings/"
+                    f"{reports_root}/findings/"
                     f"{pull_request.identifier}/"
                     f"{decision.reviewer.value}.json"
                 ),
@@ -178,12 +178,12 @@ def build_review_plan(
             str(workspace_path)
         ),
         "context_path": (
-            f"reports/raw/"
+            f"{reports_root}/raw/"
             f"{pull_request.identifier}/"
             f"pr-context.json"
         ),
         "routing_path": (
-            f"reports/raw/"
+            f"{reports_root}/raw/"
             f"{pull_request.identifier}/"
             f"routing.json"
         ),
@@ -219,7 +219,7 @@ def build_review_plan(
                 "finding-verification/SKILL.md"
             ),
             "output": (
-                f"reports/verification/"
+                f"{reports_root}/verification/"
                 f"{pull_request.identifier}/"
                 f"verification-results.json"
             ),
@@ -230,12 +230,12 @@ def build_review_plan(
                 "review-synthesis/SKILL.md"
             ),
             "json_output": (
-                f"reports/reviews/"
+                f"{reports_root}/reviews/"
                 f"{pull_request.identifier}/"
                 f"review.json"
             ),
             "markdown_output": (
-                f"reports/reviews/"
+                f"{reports_root}/reviews/"
                 f"{pull_request.identifier}/"
                 f"review.md"
             ),
@@ -355,6 +355,7 @@ def prepare_review(
         context=context,
         routing=routing,
         workspace_path=workspace.path,
+        reports_root=reports_root,
     )
 
     write_json(
@@ -463,7 +464,7 @@ def main() -> int:
                 ]
             ),
             "review_plan": (
-                f"reports/raw/"
+                f"{args.reports_root}/raw/"
                 f"{plan['pr_id']}/"
                 f"review-plan.json"
             ),

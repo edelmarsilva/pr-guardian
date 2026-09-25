@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import sqlite3
 
+
 def create_connection() -> sqlite3.Connection:
     connection = sqlite3.connect(
     ":memory:",

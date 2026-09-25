@@ -10,7 +10,6 @@ from analyzers.tests.pytest_runner import (
     PytestRunner,
 )
 from models import (
-    Confidence,
     Finding,
     PullRequest,
     VerificationMethod,
@@ -106,38 +105,7 @@ class DefaultFindingVerifier:
                 )
             )
 
-        if (
-            self.policy
-            .allow_direct_code_evidence
-            and finding.confidence
-            == Confidence.CONFIRMED
-            and len(
-                finding.evidence
-            )
-            >= 2
-        ):
-            return VerificationResult(
-                finding_id=(
-                    finding.id
-                ),
-                method=(
-                    VerificationMethod
-                    .DIRECT_CODE_EVIDENCE
-                ),
-                status=(
-                    VerificationStatus
-                    .VERIFIED
-                ),
-                evidence=list(
-                    finding.evidence
-                ),
-                notes=(
-                    "Finding contains "
-                    "multiple direct code "
-                    "evidence items and was "
-                    "reported as CONFIRMED."
-                ),
-            )
+        # Reviewer claims are not independent repository verification.
 
         return VerificationResult(
             finding_id=finding.id,
@@ -182,7 +150,7 @@ class DefaultFindingVerifier:
             repository_path=(
                 repository_path
             ),
-            targets=[str(test_file)],
+            targets=[str(test_file.resolve())],
         )
 
         classification = (
@@ -236,6 +204,7 @@ class DefaultFindingVerifier:
                     "deterministically."
                 ),
                 metadata={
+                    **self._execution_metadata(execution),
                     "failure_class": (
                         "PRODUCT_DEFECT"
                     ),
@@ -289,6 +258,7 @@ class DefaultFindingVerifier:
                     "could not be reproduced."
                 ),
                 metadata={
+                    **self._execution_metadata(execution),
                     "failure_class": None,
                     "exit_code": (
                         execution
@@ -337,6 +307,7 @@ class DefaultFindingVerifier:
                 )
             ),
             metadata={
+                **self._execution_metadata(execution),
                 "failure_class": (
                     classification
                 ),
@@ -358,6 +329,21 @@ class DefaultFindingVerifier:
             },
         )
 
+    @staticmethod
+    def _execution_metadata(execution: PytestExecutionResult) -> dict:
+        return {
+            "test_summary": {
+                key: getattr(execution.summary, key)
+                for key in ("passed", "failed", "errors", "skipped", "xfailed", "xpassed")
+            },
+            "duration_seconds": execution.analyzer_result.duration_seconds,
+            "test_failures": [
+                {"nodeid": test.nodeid, "phase": test.failure_phase, "message": test.message}
+                for test in execution.summary.tests if test.failure_phase
+            ],
+            "raw_output_path": str(execution.analyzer_result.raw_output_path or ""),
+        }
+
     def _classify_test_execution(
         self,
         execution: PytestExecutionResult,
@@ -367,66 +353,39 @@ class DefaultFindingVerifier:
         that do not prove a product defect.
         """
 
-        if execution.analyzer_result.exit_code == 0:
-            return (
-                "EXPECTED_BEHAVIOR_CONFIRMED"
-            )
+        from analyzers.base import AnalyzerStatus
 
-        combined_output = (
-            f"{execution.analyzer_result.stdout}\n"
-            f"{execution.analyzer_result.stderr}"
-        ).lower()
+        result = execution.analyzer_result
+        summary = execution.summary
+        if result.status not in {AnalyzerStatus.SUCCESS, AnalyzerStatus.FINDINGS}:
+            return "ENVIRONMENT_OR_TEST_FAILURE"
+        if result.exit_code not in {0, 1} or summary.errors:
+            return "ENVIRONMENT_OR_TEST_FAILURE"
+        if not summary.tests:
+            return "UNKNOWN_TEST_FAILURE"
+        if any(test.failure_phase in {"setup", "teardown"} for test in summary.tests):
+            return "ENVIRONMENT_OR_TEST_FAILURE"
+        if result.exit_code == 0:
+            if (
+                summary.passed > 0
+                and sum(test.call_outcome == "passed" and test.outcome == "passed"
+                        for test in summary.tests) == summary.passed
+                and summary.failed == 0
+                and all(
+                test.outcome in {"passed", "skipped", "xfailed"}
+                for test in summary.tests
+                )
+            ):
+                return "EXPECTED_BEHAVIOR_CONFIRMED"
+            return "UNKNOWN_TEST_FAILURE"
 
-        infrastructure_markers = (
-            "modulenotfounderror",
-            "importerror",
-            "syntaxerror",
-            "fixture ",
-            "fixture not found",
-            "collection error",
-            "error collecting",
-            "connection refused",
-            "database is unavailable",
-            "could not connect",
-            "timeout",
-            "internalerror",
-            "permissionerror",
-            "filenotfounderror",
-        )
-
-        if any(
-            marker
-            in combined_output
-            for marker
-            in infrastructure_markers
+        failures = [test for test in summary.tests if test.outcome == "failed"]
+        if summary.failed > 0 and len(failures) == summary.failed and all(
+            test.failure_phase == "call" and test.assertion_failure
+            for test in failures
         ):
-            return (
-                "ENVIRONMENT_OR_TEST_FAILURE"
-            )
-
-        if (
-            execution.summary
-            and execution.summary.failed
-            > 0
-            and execution.summary.errors
-            == 0
-        ):
-            return (
-                "PRODUCT_DEFECT_REPRODUCED"
-            )
-
-        if (
-            execution.summary
-            and execution.summary.errors
-            > 0
-        ):
-            return (
-                "ENVIRONMENT_OR_TEST_FAILURE"
-            )
-
-        return (
-            "UNKNOWN_TEST_FAILURE"
-        )
+            return "PRODUCT_DEFECT_REPRODUCED"
+        return "ENVIRONMENT_OR_TEST_FAILURE"
 
     def _verification_failure_note(
         self,

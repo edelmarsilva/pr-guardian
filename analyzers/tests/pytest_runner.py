@@ -1,14 +1,18 @@
 from __future__ import annotations
 
 import json
+import re
+import sys
 from dataclasses import dataclass, field
 from pathlib import Path
+from uuid import uuid4
 
 from analyzers.base import (
     AnalyzerResult,
     AnalyzerStatus,
-    )
+)
 from analyzers.runner import run_command
+
 
 @dataclass(slots=True)
 class PytestTestCaseResult:
@@ -16,6 +20,9 @@ class PytestTestCaseResult:
     outcome: str
     duration_seconds: float | None = None
     message: str | None = None
+    failure_phase: str | None = None
+    assertion_failure: bool = False
+    call_outcome: str | None = None
 
 @dataclass(slots=True)
 class PytestSummary:
@@ -54,6 +61,8 @@ class PytestExecutionResult:
                 AnalyzerStatus.SUCCESS,
                 AnalyzerStatus.FINDINGS,
             }
+            and self.analyzer_result.exit_code == 0
+            and self.summary.passed > 0
             and self.summary.failed == 0
             and self.summary.errors == 0
         )
@@ -68,11 +77,25 @@ class PytestRunner:
         targets: list[str] | None = None,
         timeout: float = 300.0,
         extra_args: list[str] | None = None,
-        json_report_file: str = ".pr_guardian_pytest.json",
+        json_report_file: str | None = None,
     ) -> PytestExecutionResult:
-        import sys
         targets = targets or []
         extra_args = extra_args or []
+
+        repository_path = Path(repository_path).resolve()
+        report_path = repository_path / (
+            json_report_file or f".pr_guardian_pytest_{uuid4().hex}.json"
+        )
+        # Explicit report paths must never reuse evidence from an earlier run.
+        try:
+            report_path.unlink(missing_ok=True)
+        except OSError as exc:
+            return PytestExecutionResult(
+                analyzer_result=AnalyzerResult(
+                    analyzer=self.name, status=AnalyzerStatus.FAILED, stderr=str(exc)
+                ),
+                summary=PytestSummary(),
+            )
 
         command = [
             sys.executable,
@@ -80,7 +103,7 @@ class PytestRunner:
             "pytest",
             *targets,
             "--json-report",
-            f"--json-report-file={json_report_file}",
+            f"--json-report-file={report_path}",
             "-q",
             *extra_args,
         ]
@@ -97,38 +120,46 @@ class PytestRunner:
         if result.status in {
             AnalyzerStatus.NOT_INSTALLED,
             AnalyzerStatus.TIMEOUT,
-            AnalyzerStatus.FAILED,
-        }:
+        } or (result.status == AnalyzerStatus.FAILED and result.exit_code is None):
             return PytestExecutionResult(
                 analyzer_result=result,
                 summary=summary,
             )
 
-        report_path = (
-            repository_path
-            / json_report_file
-        )
-
-        if not report_path.exists():
-            if result.exit_code == 0:
-                result.status = AnalyzerStatus.SUCCESS
-            else:
-                result.status = AnalyzerStatus.FINDINGS
-
-            return PytestExecutionResult(
-                analyzer_result=result,
-                summary=summary,
-            )
+        result.raw_output_path = report_path
+        if not report_path.is_file():
+            result.status = AnalyzerStatus.FAILED
+            result.stderr += "\nPytest did not produce a fresh JSON report."
+            return PytestExecutionResult(analyzer_result=result, summary=summary)
 
         try:
-            payload = json.loads(
-                report_path.read_text(
-                    encoding="utf-8"
-                )
-            )
+            payload = json.loads(report_path.read_text(encoding="utf-8"))
+            if not isinstance(payload, dict):
+                raise ValueError("Report must be an object")
+            if payload.get("exitcode") != result.exit_code:
+                raise ValueError("Report exit code disagrees with process")
+            counts = payload.get("summary")
+            tests = payload.get("tests")
+            if not isinstance(counts, dict) or not isinstance(tests, list):
+                raise ValueError("Report lacks summary or test results")
+            for key in ("passed", "failed", "skipped", "error", "errors", "xfailed", "xpassed"):
+                value = counts.get(key, 0)
+                if type(value) is not int or value < 0:
+                    raise ValueError("Invalid test count")
+            for test in tests:
+                if not isinstance(test, dict):
+                    raise ValueError("Invalid test result")
+                for phase in ("setup", "call", "teardown"):
+                    data = test.get(phase, {})
+                    if not isinstance(data, dict):
+                        raise ValueError("Invalid test phase")
+                    if "duration" in data and not isinstance(data["duration"], (int, float)):
+                        raise ValueError("Invalid duration")
+                    if "crash" in data and not isinstance(data["crash"], dict):
+                        raise ValueError("Invalid crash")
         except (
             OSError,
-            json.JSONDecodeError,
+            ValueError,
         ):
             result.status = AnalyzerStatus.FAILED
             result.stderr += (
@@ -238,6 +269,19 @@ class PytestRunner:
                         longrepr
                     )
 
+            failure_phase = next(
+                (phase for phase in ("setup", "teardown", "call")
+                 if test.get(phase, {}).get("outcome") == "failed"),
+                None,
+            )
+            crash = (call_data or {}).get("crash", {})
+            crash_message = str(crash.get("message", ""))
+            # Assertion rewriting reports either `assert ...` or AssertionError.
+            # Never infer an assertion from a generic failed-test count.
+            assertion_failure = bool(re.match(
+                r"^(?:assert\s|AssertionError(?:\b|:))", crash_message
+            ))
+
             summary.tests.append(
                 PytestTestCaseResult(
                     nodeid=test.get(
@@ -247,10 +291,15 @@ class PytestRunner:
                     outcome=outcome,
                     duration_seconds=duration,
                     message=message,
+                    failure_phase=failure_phase,
+                    assertion_failure=assertion_failure,
+                    call_outcome=(call_data or {}).get("outcome"),
                 )
             )
 
-        if (
+        if result.exit_code not in {0, 1}:
+            result.status = AnalyzerStatus.FAILED
+        elif (
             summary.failed > 0
             or summary.errors > 0
         ):

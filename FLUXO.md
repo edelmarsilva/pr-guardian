@@ -273,7 +273,7 @@ Para garantir transparência e evitar alarmes falsos, o PR Guardian separa categ
 ### 1. Configuração do Ambiente
 Copie o arquivo de exemplo de variáveis de ambiente e instale as dependências:
 ```bash
-cp .env-example .env
+cp .env.example .env
 python3 -m venv .venv
 source .venv/bin/activate
 pip install -r requirements.txt

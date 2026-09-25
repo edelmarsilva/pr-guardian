@@ -13,18 +13,19 @@ from models import (
     Review,
     ReviewMetrics,
     VerificationResult,
-    )
+)
 from repository import prepare_pull_request_workspace
 
 from .context_builder import (
     ContextBuilder,
     PullRequestContext,
-    )
+)
 from .router import (
     ReviewDomain,
     ReviewerRouter,
     RoutingResult,
-    )
+)
+
 
 class Reviewer(Protocol):
     """
@@ -321,6 +322,8 @@ class PRGuardianOrchestrator:
             - started
         )
 
+        review.metrics = metrics.to_dict()
+
         self._persist_review(
             pull_request,
             review,
@@ -482,6 +485,13 @@ class PRGuardianOrchestrator:
 
             elif status == "UNVERIFIED":
                 metrics.unverified_findings += 1
+
+        metrics.generated_tests = len({v.test_file for v in verifications if v.test_file})
+        for result in verifications:
+            summary = result.metadata.get("test_summary", {})
+            metrics.tests_passed += summary.get("passed", 0)
+            metrics.tests_failed += summary.get("failed", 0)
+            metrics.tests_executed += sum(summary.get(key, 0) for key in ("passed", "failed", "errors", "skipped", "xfailed", "xpassed"))
 
         metrics.extra[
             "reviewer_failures"

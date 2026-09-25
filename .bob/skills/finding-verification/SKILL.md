@@ -1112,19 +1112,13 @@ reports/verification/<pr-id>/verification-summary.md
 
 ---
 
-# Recommended JSON Structure
+# Canonical JSON Structure
+
+Validate this artifact with `schemas/verification.schema.json`. Store aggregate summaries in a separate metrics artifact; the verification envelope accepts only `pr_id` and `results`.
 
 ```json
 {
   "pr_id": "42",
-  "summary": {
-    "findings_received": 12,
-    "verified": 6,
-    "refuted": 2,
-    "unverified": 2,
-    "verification_failed": 1,
-    "not_applicable": 1
-  },
   "results": [
     {
       "finding_id": "SEC-001",
@@ -1240,11 +1234,13 @@ If the original finding itself was malformed, report that separately.
 
 # Synthesizer Handoff
 
-For every finding provide:
+For every finding, place publication guidance inside its `metadata` object:
 
-```text
-publishable: true/false
+```json
+{"metadata": {"publishable": false}}
 ```
+
+Do not add `publishable` as a top-level verification-result field.
 
 Suggested logic:
 

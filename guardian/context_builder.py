@@ -11,7 +11,8 @@ from repository import (
     find_files_depending_on,
     get_file_history,
     list_repository_files,
-    )
+)
+
 
 @dataclass(slots=True)
 class ChangedSymbolContext:

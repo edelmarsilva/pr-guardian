@@ -11,7 +11,6 @@ from github import (
     InvalidWebhookSignature,
 )
 
-
 SECRET = "super-secret-test-key"
 
 

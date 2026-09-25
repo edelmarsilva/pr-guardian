@@ -73,9 +73,9 @@ def review_detail(
         routing_path
     )
 
-    metrics = _read_json_optional(
-        metrics_path
-    )
+    if not metrics_path.exists():
+        metrics_path = reports_root / "metrics" / f"{pr_id}-finalize.json"
+    metrics = _read_json_optional(metrics_path)
 
     return render_template(
         "review.html",

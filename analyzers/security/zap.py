@@ -9,8 +9,9 @@ from analyzers.base import (
     AnalyzerIssue,
     AnalyzerResult,
     AnalyzerStatus,
-    )
+)
 from analyzers.runner import run_command
+
 
 @dataclass(slots=True)
 class ZapAlert:
