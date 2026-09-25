@@ -11,7 +11,7 @@ from .pull_request import ChangedFile, PullRequest
 from .review import Review
 from .verification import VerificationMethod, VerificationResult
 
-**all** = [
+__all__ = [
 "ChangedFile",
 "Confidence",
 "Finding",

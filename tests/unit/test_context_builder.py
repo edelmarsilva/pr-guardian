@@ -9,7 +9,7 @@ from models import ChangedFile, PullRequest
 def make_pull_request(
     *,
     changed_files: list[ChangedFile],
-) -> PullRequest:
+    ) -> PullRequest:
     return PullRequest(
         repository_owner="example",
         repository_name="project",
@@ -40,7 +40,7 @@ def changed_file(
     filename: str,
     *,
     patch: str = "",
-) -> ChangedFile:
+    ) -> ChangedFile:
     return ChangedFile(
         filename=filename,
         status="modified",
@@ -55,7 +55,7 @@ def write_file(
     root: Path,
     relative_path: str,
     content: str,
-) -> Path:
+    ) -> Path:
     path = (
         root
         / relative_path
@@ -76,7 +76,7 @@ def write_file(
 
 def test_context_builder_reads_repository_structure(
     tmp_path: Path,
-):
+    ):
     repository = (
         tmp_path
         / "repository"
@@ -90,15 +90,15 @@ def test_context_builder_reads_repository_structure(
         """
 def find_user(user_id):
     return user_id
-""",
+    """,
     )
 
     write_file(
         repository,
         "app/routes/users.py",
         """
-from app.services.users import find_user
-""",
+    from app.services.users import find_user
+    """,
     )
 
     write_file(
@@ -107,7 +107,7 @@ from app.services.users import find_user
         """
 def test_find_user():
     assert True
-""",
+    """,
     )
 
     pull_request = make_pull_request(
@@ -131,7 +131,7 @@ def test_find_user():
 
 def test_context_builder_identifies_changed_file_context(
     tmp_path: Path,
-):
+    ):
     repository = (
         tmp_path
         / "repository"
@@ -145,7 +145,7 @@ def test_context_builder_identifies_changed_file_context(
         """
 def normalize_user(name):
     return name.strip()
-""",
+    """,
     )
 
     pull_request = make_pull_request(
@@ -153,11 +153,11 @@ def normalize_user(name):
             changed_file(
                 "app/services/users.py",
                 patch="""
--def normalize_user(name):
--    return name
-+def normalize_user(name):
-+    return name.strip()
-""",
+    -def normalize_user(name):
+    -    return name
+    +def normalize_user(name):
+    +    return name.strip()
+    """,
             )
         ]
     )
@@ -180,7 +180,7 @@ def normalize_user(name):
 
 def test_context_builder_finds_python_dependents(
     tmp_path: Path,
-):
+    ):
     repository = (
         tmp_path
         / "repository"
@@ -194,19 +194,19 @@ def test_context_builder_finds_python_dependents(
         """
 def find_user(user_id):
     return {"id": user_id}
-""",
+    """,
     )
 
     write_file(
         repository,
         "app/routes/users.py",
         """
-from app.services.users import find_user
+    from app.services.users import find_user
 
 
 def get_user(user_id):
     return find_user(user_id)
-""",
+    """,
     )
 
     pull_request = make_pull_request(
@@ -232,7 +232,7 @@ def get_user(user_id):
 
 def test_context_builder_detects_api_specification(
     tmp_path: Path,
-):
+    ):
     repository = (
         tmp_path
         / "repository"
@@ -244,12 +244,12 @@ def test_context_builder_detects_api_specification(
         repository,
         "openapi.yaml",
         """
-openapi: 3.0.0
-info:
+    openapi: 3.0.0
+    info:
   title: Example API
   version: 1.0.0
-paths: {}
-""",
+    paths: {}
+    """,
     )
 
     write_file(
@@ -258,7 +258,7 @@ paths: {}
         """
 def list_users():
     pass
-""",
+    """,
     )
 
     pull_request = make_pull_request(
@@ -281,7 +281,7 @@ def list_users():
 
 def test_context_builder_detects_database_migrations(
     tmp_path: Path,
-):
+    ):
     repository = (
         tmp_path
         / "repository"
@@ -293,10 +293,10 @@ def test_context_builder_detects_database_migrations(
         repository,
         "migrations/001_create_users.sql",
         """
-CREATE TABLE users (
+    CREATE TABLE users (
     id INTEGER PRIMARY KEY
-);
-""",
+    );
+    """,
     )
 
     write_file(
@@ -305,7 +305,7 @@ CREATE TABLE users (
         """
 class User:
     pass
-""",
+    """,
     )
 
     pull_request = make_pull_request(
@@ -328,7 +328,7 @@ class User:
 
 def test_context_builder_detects_test_files(
     tmp_path: Path,
-):
+    ):
     repository = (
         tmp_path
         / "repository"
@@ -342,7 +342,7 @@ def test_context_builder_detects_test_files(
         """
 def calculate():
     return 42
-""",
+    """,
     )
 
     write_file(
@@ -351,7 +351,7 @@ def calculate():
         """
 def test_calculate():
     assert True
-""",
+    """,
     )
 
     pull_request = make_pull_request(
@@ -374,7 +374,7 @@ def test_calculate():
 
 def test_context_builder_detects_security_risk_signals(
     tmp_path: Path,
-):
+    ):
     repository = (
         tmp_path
         / "repository"
@@ -388,7 +388,7 @@ def test_context_builder_detects_security_risk_signals(
         """
 def decode_token(token):
     return jwt.decode(token, SECRET_KEY)
-""",
+    """,
     )
 
     pull_request = make_pull_request(
@@ -396,9 +396,9 @@ def decode_token(token):
             changed_file(
                 "app/auth.py",
                 patch="""
-+token = request.headers.get("Authorization")
-+payload = jwt.decode(token, SECRET_KEY)
-""",
+    +token = request.headers.get("Authorization")
+    +payload = jwt.decode(token, SECRET_KEY)
+    """,
             )
         ]
     )
@@ -421,7 +421,7 @@ def decode_token(token):
 
 def test_context_builder_detects_database_risk_signals(
     tmp_path: Path,
-):
+    ):
     repository = (
         tmp_path
         / "repository"
@@ -437,7 +437,7 @@ def find_user(email):
     return database.execute(
         f"SELECT * FROM users WHERE email = '{email}'"
     )
-""",
+    """,
     )
 
     pull_request = make_pull_request(
@@ -445,8 +445,8 @@ def find_user(email):
             changed_file(
                 "app/repositories/users.py",
                 patch="""
-+query = f"SELECT * FROM users WHERE email = '{email}'"
-""",
+    +query = f"SELECT * FROM users WHERE email = '{email}'"
+    """,
             )
         ]
     )
@@ -469,7 +469,7 @@ def find_user(email):
 
 def test_context_builder_detects_queue_components(
     tmp_path: Path,
-):
+    ):
     repository = (
         tmp_path
         / "repository"
@@ -481,12 +481,12 @@ def test_context_builder_detects_queue_components(
         repository,
         "workers/report_worker.py",
         """
-from rq import Queue
+    from rq import Queue
 
 
 def process_report(report_id):
     pass
-""",
+    """,
     )
 
     pull_request = make_pull_request(
@@ -494,9 +494,9 @@ def process_report(report_id):
             changed_file(
                 "workers/report_worker.py",
                 patch="""
-+from rq import Queue
-+queue.enqueue(process_report, report_id)
-""",
+    +from rq import Queue
+    +queue.enqueue(process_report, report_id)
+    """,
             )
         ]
     )
@@ -519,7 +519,7 @@ def process_report(report_id):
 
 def test_context_builder_finds_changed_symbols(
     tmp_path: Path,
-):
+    ):
     repository = (
         tmp_path
         / "repository"
@@ -538,7 +538,7 @@ class ReportService:
 
 def normalize_title(value):
     return value.strip()
-""",
+    """,
     )
 
     pull_request = make_pull_request(
@@ -547,9 +547,9 @@ def normalize_title(value):
                 "app/services/reports.py",
                 patch="""
  def normalize_title(value):
--    return value
-+    return value.strip()
-""",
+    -    return value
+    +    return value.strip()
+    """,
             )
         ]
     )
@@ -583,7 +583,7 @@ def normalize_title(value):
 
 def test_context_builder_goes_beyond_changed_files(
     tmp_path: Path,
-):
+    ):
     repository = (
         tmp_path
         / "repository"
@@ -597,31 +597,31 @@ def test_context_builder_goes_beyond_changed_files(
         """
 def find_report(report_id):
     return report_id
-""",
+    """,
     )
 
     write_file(
         repository,
         "app/services/reports.py",
         """
-from app.repositories.reports import find_report
+    from app.repositories.reports import find_report
 
 
 def get_report(report_id):
     return find_report(report_id)
-""",
+    """,
     )
 
     write_file(
         repository,
         "app/routes/reports.py",
         """
-from app.services.reports import get_report
+    from app.services.reports import get_report
 
 
 def route(report_id):
     return get_report(report_id)
-""",
+    """,
     )
 
     pull_request = make_pull_request(
@@ -659,7 +659,7 @@ def route(report_id):
 
 def test_context_builder_serializes_to_dictionary(
     tmp_path: Path,
-):
+    ):
     repository = (
         tmp_path
         / "repository"
@@ -673,7 +673,7 @@ def test_context_builder_serializes_to_dictionary(
         """
 def execute():
     return True
-""",
+    """,
     )
 
     pull_request = make_pull_request(

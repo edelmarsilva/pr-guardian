@@ -47,7 +47,7 @@ get_file_history,
 get_recent_repository_history,
 )
 
-**all** = [
+__all__ = [
 "CallGraph",
 "CommitInfo",
 "DependencyGraph",

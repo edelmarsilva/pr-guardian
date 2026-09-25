@@ -3,7 +3,7 @@ from .pip_audit import PipAuditAnalyzer
 from .ruff import RuffAnalyzer
 from .semgrep import SemgrepAnalyzer
 
-**all** = [
+__all__ = [
 "BanditAnalyzer",
 "PipAuditAnalyzer",
 "RuffAnalyzer",

@@ -1,16 +1,15 @@
-from **future** import annotations
+from __future__ import annotations
 
 import sqlite3
 
 def create_connection() -> sqlite3.Connection:
-connection = sqlite3.connect(
-":memory:",
-)
+    connection = sqlite3.connect(
+    ":memory:",
+    )
 
-```
-connection.row_factory = sqlite3.Row
+    connection.row_factory = sqlite3.Row
 
-connection.execute(
+    connection.execute(
     """
     CREATE TABLE users (
         id INTEGER PRIMARY KEY,
@@ -18,9 +17,9 @@ connection.execute(
         name TEXT NOT NULL
     )
     """
-)
+    )
 
-connection.executemany(
+    connection.executemany(
     """
     INSERT INTO users (
         id,
@@ -41,9 +40,8 @@ connection.executemany(
             "Bob",
         ),
     ],
-)
+    )
 
-connection.commit()
+    connection.commit()
 
-return connection
-```
+    return connection

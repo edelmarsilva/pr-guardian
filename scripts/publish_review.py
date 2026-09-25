@@ -11,10 +11,10 @@ from github import (
     GitHubClient,
     GitHubReviewService,
     PullRequestService,
-)
+    )
 from github.review_mapper import (
     build_github_review_payload,
-)
+    )
 from models import Finding, Review
 
 
@@ -24,7 +24,7 @@ class PublishReviewError(RuntimeError):
 
 def read_json(
     path: Path,
-) -> dict[str, Any]:
+    ) -> dict[str, Any]:
     try:
         payload = json.loads(
             path.read_text(
@@ -53,7 +53,7 @@ def read_json(
 
 def rebuild_review(
     payload: dict[str, Any],
-) -> Review:
+    ) -> Review:
     raw_findings = payload.get(
         "findings",
         [],
@@ -113,7 +113,7 @@ def rebuild_review(
 
 def parse_repository(
     value: str,
-) -> tuple[str, str]:
+    ) -> tuple[str, str]:
     if "/" not in value:
         raise PublishReviewError(
             (
@@ -147,7 +147,7 @@ def publish_review(
     review_path: Path,
     event: str,
     dry_run: bool,
-) -> dict[str, Any]:
+    ) -> dict[str, Any]:
     token = os.getenv(
         "GITHUB_TOKEN"
     )

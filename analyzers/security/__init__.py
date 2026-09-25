@@ -3,7 +3,7 @@ ZapAlert,
 ZapAnalyzer,
 )
 
-**all** = [
+__all__ = [
 "ZapAlert",
 "ZapAnalyzer",
 ]

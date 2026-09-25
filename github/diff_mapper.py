@@ -7,7 +7,7 @@ from dataclasses import dataclass
 HUNK_HEADER = re.compile(
     r"^@@ -(?P<old_start>\d+)(?:,(?P<old_count>\d+))? "
     r"\+(?P<new_start>\d+)(?:,(?P<new_count>\d+))? @@"
-)
+    )
 
 
 @dataclass(slots=True)
@@ -74,7 +74,7 @@ def parse_patch(
     *,
     filename: str,
     patch: str,
-) -> DiffMap:
+    ) -> DiffMap:
     """
     Parse a GitHub unified diff patch and map old/new line numbers.
 
@@ -204,7 +204,7 @@ def is_valid_inline_location(
     filename: str,
     line_number: int | None,
     patch: str | None,
-) -> bool:
+    ) -> bool:
     if (
         line_number is None
         or line_number < 1
@@ -228,7 +228,7 @@ def nearest_commentable_line(
     requested_line: int,
     patch: str,
     max_distance: int = 3,
-) -> int | None:
+    ) -> int | None:
     """
     Find a nearby line present in the PR patch.
 

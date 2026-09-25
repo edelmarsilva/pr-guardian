@@ -1,11 +1,10 @@
-from **future** import annotations
+from __future__ import annotations
 
 from app import create_app
 
 def test_user_can_read_report_from_same_organization():
-app = create_app()
+    app = create_app()
 
-```
 client = app.test_client()
 
 response = client.get(
@@ -21,4 +20,3 @@ payload = response.get_json()
 
 assert payload["id"] == 1
 assert payload["organization_id"] == 100
-```

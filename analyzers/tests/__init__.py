@@ -11,7 +11,7 @@ PytestSummary,
 PytestTestCaseResult,
 )
 
-**all** = [
+__all__ = [
 "CoverageAnalyzer",
 "CoverageExecutionResult",
 "CoverageSummary",

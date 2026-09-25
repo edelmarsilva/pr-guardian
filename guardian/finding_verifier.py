@@ -159,6 +159,16 @@ class DefaultFindingVerifier:
             ),
         )
 
+    @staticmethod
+    def _command_text(
+        execution: PytestExecutionResult,
+    ) -> str:
+        """Convert analyzer_result.command list to a readable string."""
+        command = execution.analyzer_result.command
+        if isinstance(command, list):
+            return " ".join(command)
+        return str(command)
+
     def _verify_with_generated_test(
         self,
         *,
@@ -172,7 +182,7 @@ class DefaultFindingVerifier:
             repository_path=(
                 repository_path
             ),
-            test_path=test_file,
+            targets=[str(test_file)],
         )
 
         classification = (
@@ -207,7 +217,9 @@ class DefaultFindingVerifier:
                     )
                 ],
                 command=(
-                    execution.command
+                    self._command_text(
+                        execution
+                    )
                 ),
                 test_file=str(
                     test_file
@@ -228,7 +240,9 @@ class DefaultFindingVerifier:
                         "PRODUCT_DEFECT"
                     ),
                     "exit_code": (
-                        execution.exit_code
+                        execution
+                        .analyzer_result
+                        .exit_code
                     ),
                 },
             )
@@ -257,7 +271,9 @@ class DefaultFindingVerifier:
                     )
                 ],
                 command=(
-                    execution.command
+                    self._command_text(
+                        execution
+                    )
                 ),
                 test_file=str(
                     test_file
@@ -275,7 +291,9 @@ class DefaultFindingVerifier:
                 metadata={
                     "failure_class": None,
                     "exit_code": (
-                        execution.exit_code
+                        execution
+                        .analyzer_result
+                        .exit_code
                     ),
                 },
             )
@@ -298,7 +316,9 @@ class DefaultFindingVerifier:
                 )
             ],
             command=(
-                execution.command
+                self._command_text(
+                    execution
+                )
             ),
             test_file=str(
                 test_file
@@ -321,13 +341,19 @@ class DefaultFindingVerifier:
                     classification
                 ),
                 "exit_code": (
-                    execution.exit_code
+                    execution
+                    .analyzer_result
+                    .exit_code
                 ),
                 "stdout": (
-                    execution.stdout
+                    execution
+                    .analyzer_result
+                    .stdout
                 ),
                 "stderr": (
-                    execution.stderr
+                    execution
+                    .analyzer_result
+                    .stderr
                 ),
             },
         )
@@ -341,14 +367,14 @@ class DefaultFindingVerifier:
         that do not prove a product defect.
         """
 
-        if execution.exit_code == 0:
+        if execution.analyzer_result.exit_code == 0:
             return (
                 "EXPECTED_BEHAVIOR_CONFIRMED"
             )
 
         combined_output = (
-            f"{execution.stdout}\n"
-            f"{execution.stderr}"
+            f"{execution.analyzer_result.stdout}\n"
+            f"{execution.analyzer_result.stderr}"
         ).lower()
 
         infrastructure_markers = (
@@ -459,6 +485,6 @@ class DefaultFindingVerifier:
                 normalized_id
                 in candidate.stem.lower()
             ):
-                return candidate
+                return candidate.resolve()
 
         return None

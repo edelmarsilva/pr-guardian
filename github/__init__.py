@@ -9,18 +9,18 @@ GitHubCommit,
 GitHubPullRequestData,
 GitHubUser,
 )
-from .pull_requests import PullRequestService
+from .pull_request import PullRequestService
 from .review_mapper import build_github_review_payload
 from .reviews import (
 GitHubReviewComment,
 GitHubReviewPayload,
 GitHubReviewService,
 )
-from .webhook_policy import (
+from .webhooks_policy import (
 DEFAULT_PULL_REQUEST_ACTIONS,
 should_analyze_pull_request,
 )
-from .webhook_service import (
+from .webhooks_service import (
 GitHubWebhookService,
 WebhookProcessingResult,
 )
@@ -35,7 +35,7 @@ parse_webhook_event,
 verify_webhook_signature,
 )
 
-**all** = [
+__all__ = [
 "DEFAULT_PULL_REQUEST_ACTIONS",
 "GitHubAPIError",
 "GitHubChangedFile",

@@ -126,3 +126,27 @@ skips = [
     "*_test.py",
     "test_*.py",
 ]
+
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = [
+    "app*",
+    "guardian*",
+    "github*",
+    "repository*",
+    "analyzers*",
+    "models*",
+    "scripts*",
+]
+exclude = [
+    "workspace*",
+    "reports*",
+    "bob_sessions*",
+    "benchmarks*",
+    "schemas*",
+    "tests*",
+]

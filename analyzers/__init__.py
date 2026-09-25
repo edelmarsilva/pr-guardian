@@ -28,7 +28,7 @@ PytestSummary,
 PytestTestCaseResult,
 )
 
-**all** = [
+__all__ = [
 "AnalyzerIssue",
 "AnalyzerResult",
 "AnalyzerStatus",

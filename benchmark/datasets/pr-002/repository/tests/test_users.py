@@ -1,11 +1,10 @@
-from **future** import annotations
+from __future__ import annotations
 
 from app import create_app
 
 def test_find_existing_user():
-app = create_app()
+    app = create_app()
 
-```
 client = app.test_client()
 
 response = client.get(
@@ -22,4 +21,3 @@ payload = response.get_json()
 assert payload["email"] == (
     "alice@example.com"
 )
-```

@@ -6,7 +6,7 @@ import json
 
 import pytest
 
-from github.webhooks import (
+from github import (
     GitHubWebhookService,
     InvalidWebhookSignature,
 )
